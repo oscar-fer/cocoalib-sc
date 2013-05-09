@@ -35,7 +35,7 @@ void program()
 
  cout << endl << "------ ADPAC ------" << endl << endl;
  //ideal JJ=ADPAC(6,3);
- SimplicialComplex Delta=ADPAC(6,6);
+ SimplicialComplex Delta=ADPAC(6,5);
  cout << Delta.mySize() << endl;
  // cout << ADPAC(6,3) << endl;
  // std::set<facet> LiF=Delta.myifaces(0,2);
