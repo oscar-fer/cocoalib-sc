@@ -1,0 +1,173 @@
+#ifndef CoCoA_oscarSC_H
+#define CoCoA_oscarSC_H
+
+//   Copyright (c)  2013 Oscar Fernandez
+
+//   This file "could be" part of the source of CoCoALib, the CoCoA Library.
+
+//   CoCoALib is free software: you can redistribute it and/or modify
+//   it under the terms of the GNU General Public License as published by
+//   the Free Software Foundation, either version 3 of the License, or
+//   (at your option) any later version.
+
+//   CoCoALib is distributed in the hope that it will be useful,
+//   but WITHOUT ANY WARRANTY; without even the implied warranty of
+//   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//   GNU General Public License for more details.
+
+//   You should have received a copy of the GNU General Public License
+//   along with CoCoALib.  If not, see <http://www.gnu.org/licenses/>.
+
+
+#include "CoCoA/DynamicBitset.H"
+#include "CoCoA/TmpGTypes.H"
+#include "CoCoA/io.H"
+#include "CoCoA/time.H"
+
+#include <cstddef>
+#include <vector>
+#include <list>
+#include <set>
+#include <bitset>
+
+//----- seems to be not necessary any of these:
+//using std::size_t;
+//using std::vector;
+//using std::list;
+//using std::bitset;
+//#include <utility>
+//using std::pair;
+
+
+namespace CoCoA
+{
+
+  class PolyRing; // forward declaration -- defined in PolyRing.H
+  class RingElem; // forward declaration -- defined in ring.H
+  class ideal; //Oscar
+  typedef DynamicBitset facet;
+
+// WARNING TODO: facets are supposed to have all the same len.
+// Add a static field and some check.
+
+// Add the PolyRing (at least Monomial) to the SimplicialComplex class.
+// This helps the I/O. Or, change the I/O in such a way to get the
+// PR from the PL, special case list []
+
+  typedef std::list<facet>::const_iterator SimplicialComplexConstIter;
+  typedef std::list<facet>::iterator SimplicialComplexIter;
+
+
+  class SimplicialComplex
+  {
+  public:
+    //CONSTRUCTORS
+    SimplicialComplex(const long& l) {myEmptySC(l);}; //built a SC on l vertices and the empty set as the only face.
+    SimplicialComplex(const PolyList&);
+    SimplicialComplex(const std::list<facet>&);
+    SimplicialComplex(const SimplicialComplex& theSimplicialComplex, const std::vector<long>& VerticesToKeep);
+    SimplicialComplex(const SimplicialComplex& theSimplicialComplex, const facet& VerticesToKeep);
+    // SimplicialComplex(){}; // do I need this? 
+    ~SimplicialComplex(){};
+
+    //OPERATORS
+    friend std::ostream& operator<<(std::ostream&, const SimplicialComplex&);
+    SimplicialComplex& operator=(const SimplicialComplex&);
+    
+    //FUNCTIONS
+   
+    friend SimplicialComplex simplexSC(const long& n);
+    
+    void myEmptySC(const int& );
+    void myInsert(const facet& );
+    void myErase(const facet& f) { CoCoA_ASSERT(f!=facet(len(f))); myElems.remove(f); }// so far I only use this in myInsert, where it is called is to erase a facet contained in a new one so I do not need to erase vertices from myVSet. In that case the CoCoA ASSERT is not necessary
+    long myNumIndets() const;
+    long mySize() const { return len(myElems); }
+    long myDim() const {return count(myElems.back())-1;}
+    std::set<facet> myifaces(const long& , const long&);
+    std::list<facet> myFacetList() const;
+    facet myGetVSet() const;
+    facet myComplF(const facet& f) const {return myVSet-f;} // complement wrt appearing vertices
+    ideal myStanleyReisnerIdeal(const SparsePolyRing&) ;
+
+    SimplicialComplex myLinkSC(const facet& ) const;
+    SimplicialComplex myStarSC(const facet& ) const;
+    SimplicialComplex myDelSC(const facet& ) const;
+    SimplicialComplex myFaceDelSC(const facet& ) const;
+    
+    std::list<SimplicialComplex> connCompsSC() const;
+  
+    bool IamEmptySC() const { return ( len(myElems)==1 and myElems.front()==facet(myNumIndets()) ); }
+    bool IamFace(const facet&) const;
+    bool IamFacet(const facet&) const;
+    bool IamPure() const ;
+    bool IamConnected() const;
+    bool IamSheddingFace(const facet& ) const;
+    bool IamKDecomposable(const int&) const;
+
+
+  private:
+    void myGetVLabels() const;
+    
+    //FIELDS
+    std::list<facet> myElems;
+    facet myVSet;
+    mutable std::list<long> myVLabels;
+    
+  };// end class SimplicialComplex
+
+
+  inline SimplicialComplex operator|(const SimplicialComplex&, const SimplicialComplex&);
+  inline SimplicialComplex operator&(const SimplicialComplex&, const SimplicialComplex&);
+
+  SimplicialComplex simplexSC(const long&);
+  SimplicialComplex boundarySimplexSC(const long&);
+  SimplicialComplex unionSC(const SimplicialComplex&, const SimplicialComplex&);
+  SimplicialComplex intersectSC(const SimplicialComplex&, const SimplicialComplex&);
+
+
+  //-------functions on faces------------//
+
+  bool IsInList(const facet& , const std::list<facet>& );
+  std::list<facet> ifacesF(const int& ,const facet& );
+  std::list<facet> boundaryF( facet& );
+  std::vector<facet> vertices(const facet& );
+
+  //-------functions on SimplicialComplexes------------//
+
+  SimplicialComplex operator|(const SimplicialComplex& SC1, const SimplicialComplex& SC2) {return (unionSC(SC1,SC2));}
+
+  SimplicialComplex operator&(const SimplicialComplex& SC1, const SimplicialComplex& SC2) {return (intersectSC(SC1,SC2));}
+
+
+  //--------- other functions ------------------------//
+
+  ideal antiCycleIdeal(const long& , const SparsePolyRing& );
+  ideal  polarization(const ideal& );
+  SimplicialComplex ADPAC(const long& , const long& );
+
+
+
+  //  std::vector<RingElem> FacetList2PolyList(const SparsePolyRing&, const std::list<facet>&);
+
+
+}// end namespace cocoa#endif
+
+
+#endif
+
+
+
+/*-----------future changes:
+
+cambiar typedef facet to simplex or face
+
+functions on vertices ends in V
+functions on faces ends in S
+functions on facets ends in F
+functions on simplicial complexes ends in SC
+
+
+
+
+ */
