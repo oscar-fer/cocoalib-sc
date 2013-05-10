@@ -195,7 +195,12 @@ void program()
   cout << "is f0 in link(v0,bdS4): " << LKv.IamFace(f0) << endl;  
   cout << "is f0 in link(f0,bdS4): " << LKf.IamFace(f0) << endl;
   cout << "is v0 in bdS4: " << bdS4.IamFace(v0) << endl;
-  //-----------------------------------------
+  cout << "is v0 a facet in bdS4: " << bdS4.IamFacet(v0) << endl;
+  face F0=bdS4.myFacetList().front();
+  cout << "F0: " << F0 << endl;
+  cout << "is F0 a facet in bdS4: " << bdS4.IamFacet(F0) << endl; 
+
+ //-----------------------------------------
 
   cout << endl <<  "------purity------" << endl << endl;
 
