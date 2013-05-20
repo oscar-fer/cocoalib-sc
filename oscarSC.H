@@ -92,7 +92,8 @@ namespace CoCoA
     SimplicialComplex myStarSC(const face& ) const;
     SimplicialComplex myDelSC(const face& ) const;
     SimplicialComplex myFaceDelSC(const face& ) const;
-    
+    face myAppex() const;
+
     std::list<face> myCCSupports() const;
     std::list<SimplicialComplex> myConnCompsSC() const;
   
@@ -101,6 +102,8 @@ namespace CoCoA
     bool IamFace(const face&) const;
     bool IamFacet(const face&) const;
     bool IamPure() const;
+    bool IamCone() const;
+    bool IamSuspension() const;
     bool IamConnected() const { return len(myCCSupports())==1; }
     bool IamSheddingFace(const face& ) const;
     bool IamVertexDecomposable() const;

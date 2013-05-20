@@ -148,7 +148,7 @@ namespace CoCoA
     for (long i= the_SimplicialComplex.myNumIndets()-1;i>-1; --i)
       if (the_SimplicialComplex.myVSet.Iam1At(i)) out << i;  else out << "*"; // this is a bad way for more than 10 vertices
     SimplicialComplexConstIter it=the_SimplicialComplex.myElems.begin();
-    out << endl << " " <<  the_SimplicialComplex.myNumFacets() << " Facets  : " << *it << endl;
+    out << endl << " " <<  the_SimplicialComplex.myNumFacets() << " Facets  : " << endl << "             " << *it << endl;
     for (++it; it!=the_SimplicialComplex.myElems.end();++it)
        out  << "             " << *it << endl;
     return out;
@@ -255,14 +255,15 @@ namespace CoCoA
 
   SimplicialComplex SimplicialComplex:: myLinkSC(const face& f) const
   {
+    if (f==face(myNumIndets())) return *this;
     SimplicialComplex LK(myNumIndets()); // empty SC on the same vertex set as f
     LK.myElems.pop_back(); // we remove the empty face
     for (SimplicialComplexConstIter it=myElems.begin(); it!=myElems.end(); ++it) 
     { 
       if (f.IamSubset(*it))
       {
-      LK.myElems.push_back(*it^f);
-      LK.myVSet|=(*it^f); // ^f could be done just once at the end before return
+      LK.myElems.push_back(*it-f);
+      LK.myVSet|=(*it-f); // ^f could be done just once at the end before return
       }
     }
     if (LK.myElems.empty()) LK.myElems.push_back(LK.myVSet); // if we have added no facet, we add the empty set again
@@ -312,6 +313,15 @@ namespace CoCoA
       }
     return newSC;
   }//myFaceDelSC
+
+
+ face SimplicialComplex::myAppex() const
+  {
+    face appex=myVSet;
+    for (SimplicialComplexConstIter it=myElems.begin(); it!=myElems.end();++it)
+      appex=appex & *it;
+    return appex;
+  }
 
 
   std::list<face> SimplicialComplex::myCCSupports() const
@@ -381,7 +391,14 @@ namespace CoCoA
     return count(myElems.front())==count(myElems.back()); // facets are sorted by degrees
   }//IamPure
 
+  bool  SimplicialComplex::IamCone() const 
+  {
+    face empty=face(myNumIndets());
+    if (myAppex()==empty) return false;
+    return true;
+  }//IamCone
 
+ 
   bool SimplicialComplex::IamSheddingFace(const face& f) const // iff no facet of fdel_(star_SC(f))(f)) is a facet of fdel_SC(f) [Wo] Remark 3.12
   {
     std::list<face> LF;
@@ -620,7 +637,7 @@ namespace CoCoA
   
   SimplicialComplex  ADPAC(const long& n, const long& k )
   {
-    std::list<face> LF;;
+    std::list<face> LF;
     SparsePolyRing R(NewPolyRing(RingQQ(),SymbolRange("x",0,n-1)));
     ideal I=antiCycleIdeal(n,R);
     ideal J=I;
