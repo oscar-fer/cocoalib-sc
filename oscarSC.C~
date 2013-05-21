@@ -225,8 +225,8 @@ namespace CoCoA
   }//myFacetList
 
 
-  std::set<face> SimplicialComplex::myifaces(const long& i0, const long& i1 ) const
-  {// so far I try to avoid using this function. Namely for IamKDecomposable. Now I use it since it is faster than vertices(VSet)
+  std::set<face> SimplicialComplex::myifaces(const long& i0, const long& i1 )
+  {// so far I try to avoid using this function. Namely for IamKDecomposable
    // it returns a set with all the faces of with dim between i0-1 and i1-1
     std::list<face> L;
     std::set <face> S;
@@ -391,7 +391,6 @@ namespace CoCoA
     return count(myElems.front())==count(myElems.back()); // facets are sorted by degrees
   }//IamPure
 
-
   bool  SimplicialComplex::IamCone() const 
   {
     face empty=face(myNumIndets());
@@ -399,42 +398,12 @@ namespace CoCoA
     return true;
   }//IamCone
 
-
-  bool  SimplicialComplex::IamSuspension() const 
-  {
-    if (IamCone()) return false;
-    std::set<face>V=myifaces(0,0);
-    std::vector<face>W;
-    SimplicialComplex D;
-    for(std::set<face>::const_iterator it=V.begin(); it!=V.end(); ++it)
-      {
-	D=myDelSC(*it);
-	if (D.IamCone()) // maybe better if D.myAppex is not the empty face...
-	  {
-	    W=vertices(D.myAppex());
-	    for(long i=0; i<len(W); ++i)
-	      if(myLinkSC(*it).myFacetList()==myLinkSC(W[i]).myFacetList()) return true;
-	  }
-      }
-    return false;
-  }//IamSuspension
-
  
- bool SimplicialComplex::IamSheddingVertex(const face& f) const // if every facet of del_SC(f) is a facet of SC
- { // check f is a vertex
-    std::list<face> LF;
-    SimplicialComplex delSC=myDelSC(f); //
-    for (SimplicialComplexConstIter it=delSC.myElems.begin(); it!=delSC.myElems.end();++it)
-      if (!IamFacet(*it)) return false;
-    return true;
-  }//IamSheddingVertex
-
-
   bool SimplicialComplex::IamSheddingFace(const face& f) const // iff no facet of fdel_(star_SC(f))(f)) is a facet of fdel_SC(f) [Wo] Remark 3.12
   {
     std::list<face> LF;
     SimplicialComplex fdel_star=myStarSC(f); //
-    fdel_star=fdel_star.myFaceDelSC(f);      //is it possible to do directly SimplicialComplex fdel_star=myStarSC(f).myFaceDelSC(f) ?
+    fdel_star=fdel_star.myFaceDelSC(f);      //i sit possible to do directly SimplicialComplex fdel_star=myStarSC(f).myFaceDelSC(f) ?
     SimplicialComplex fdel=myFaceDelSC(f);
     for (SimplicialComplexConstIter it=fdel_star.myElems.begin(); it!=fdel_star.myElems.end();++it)
       if (fdel.IamFacet(*it)) return false;
@@ -448,24 +417,11 @@ namespace CoCoA
   { 
     if (IamSimplexSC()) return true;
     if (IamEmptySC()) return true;
-    std::set<face> V;
-    V=myifaces(0,0);
-    for (std::set<face>::const_iterator it=V.begin(); it!=V.end(); ++it)
-      if (IamSheddingVertex(*it) and myLinkSC(*it).IamVertexDecomposable() and myDelSC(*it).IamVertexDecomposable()) return true;
-    return false;
-  }//IamVertexDecomposable
-
-
-  bool SimplicialComplex::IamVertexDecomposable2() const
-  { 
-    if (IamSimplexSC()) return true;
-    if (IamEmptySC()) return true;
     std::vector<face> V=vertices(myVSet);
     for (long i=0; i<len(V); ++i)
       if (IamSheddingFace(V[i]) and myLinkSC(V[i]).IamVertexDecomposable() and myFaceDelSC(V[i]).IamVertexDecomposable()) return true;
     return false;
-  }//IamVertexDecomposable2
-
+  }
   
   bool SimplicialComplex::IamKDecomposable(const int& i) const  //check if it is i- decomposable
   { // check that i is not bigger than the dimension

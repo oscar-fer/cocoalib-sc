@@ -83,7 +83,7 @@ namespace CoCoA
     long myNumIndets() const;
     long myNumFacets() const { return len(myElems); }
     long myDim() const { return count(myElems.back())-1; }
-    std::set<face> myifaces(const long& , const long&) const ;
+    std::set<face> myifaces(const long& , const long&);
     std::list<face> myFacetList() const;
     face myGetVSet() const { return myVSet; }
     face myComplF(const face& f) const { return myVSet-f; } // complement wrt appearing vertices. f should be a subset of myVSet
@@ -105,15 +105,12 @@ namespace CoCoA
     bool IamCone() const;
     bool IamSuspension() const;
     bool IamConnected() const { return len(myCCSupports())==1; }
-    bool IamSheddingVertex(const face& ) const;
     bool IamSheddingFace(const face& ) const;
     bool IamVertexDecomposable() const;
-    bool IamVertexDecomposable2() const;
     bool IamKDecomposable(const int&) const;
 
+   ideal myStanleyReisnerIdeal(const SparsePolyRing&) ;
 
-    ideal myStanleyReisnerIdeal(const SparsePolyRing&) ;
-    
   private:
     void myLabelVSet() const;
     
