@@ -455,17 +455,6 @@ namespace CoCoA
     return false;
   }//IamVertexDecomposable
 
-
-  bool SimplicialComplex::IamVertexDecomposable2() const
-  { 
-    if (IamSimplexSC()) return true;
-    if (IamEmptySC()) return true;
-    std::vector<face> V=vertices(myVSet);
-    for (long i=0; i<len(V); ++i)
-      if (IamSheddingFace(V[i]) and myLinkSC(V[i]).IamVertexDecomposable() and myFaceDelSC(V[i]).IamVertexDecomposable()) return true;
-    return false;
-  }//IamVertexDecomposable2
-
   
   bool SimplicialComplex::IamKDecomposable(const int& i) const  //check if it is i- decomposable
   { // check that i is not bigger than the dimension
@@ -638,6 +627,21 @@ namespace CoCoA
       }
     return ideal(L);
   }//antiCycleIdeal
+
+
+ ideal antiPathIdeal(const long& l, const SparsePolyRing& R)
+  { // l must be smaller than or equal to NumIndets(R)
+    const vector<RingElem>& x = indets(R);
+    std::vector<RingElem> L;
+    for (long i=2; i<l; ++i ) //x[0]*x[l-1] is in the ideal
+      L.push_back(x[0]*x[i]);
+    for (long j=1; j<l-2; ++j )
+      {
+	for ( long k=j+2; k<l; ++k )
+	  L.push_back(x[j]*x[k]);
+      }
+    return ideal(L);
+  }//antiCycleIdeal
   
   
   ideal polarization(const ideal& I)
@@ -691,8 +695,21 @@ namespace CoCoA
     for (SimplicialComplexConstIter it=L.begin(); it!=L.end(); ++it)
       LF.push_back(D.myComplF(*it));
     return SimplicialComplex(LF);
-  }
+  }//ADPAC
 
+SimplicialComplex  ADPAP(const long& n, const long& k )
+  {
+    std::list<face> LF;
+    SparsePolyRing R(NewPolyRing(RingQQ(),SymbolRange("x",0,n-1)));
+    ideal I=antiPathIdeal(n,R);
+    ideal J=I;
+    for (long i=1; i<k; ++i) J=J*I;
+    SimplicialComplex D(gens(polarization(J)));
+    std::list<face> L=D.myFacetList();
+    for (SimplicialComplexConstIter it=L.begin(); it!=L.end(); ++it)
+      LF.push_back(D.myComplF(*it));
+    return SimplicialComplex(LF);
+  }//ADPAP
 
 
    // OPT: don't create a new SimplicialComplex, use a non modifying alg on the old one

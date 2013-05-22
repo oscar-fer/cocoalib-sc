@@ -111,7 +111,6 @@ namespace CoCoA
     bool IamVertexDecomposable2() const;
     bool IamKDecomposable(const int&) const;
 
-
     ideal myStanleyReisnerIdeal(const SparsePolyRing&) ;
     
   private:
@@ -151,9 +150,10 @@ namespace CoCoA
   //--------- other functions ------------------------//
 
   ideal antiCycleIdeal(const long& , const SparsePolyRing& );
+  ideal antiPathIdeal(const long& , const SparsePolyRing& );
   ideal polarization(const ideal& );
   SimplicialComplex ADPAC(const long& , const long& );
-
+  SimplicialComplex ADPAP(const long& , const long& );
 
   //  std::vector<RingElem> FaceList2PolyList(const SparsePolyRing&, const std::list<face>&);
 
